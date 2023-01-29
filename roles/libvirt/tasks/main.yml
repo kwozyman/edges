@@ -1,0 +1,11 @@
+---
+- name: define storage pool
+  community.libvirt.virt_pool:
+    command: define
+    name: "{{ libvirt_pool_name }}"
+    xml: '{{ lookup("template", "storage-pool.xml.j2") }}'
+- name: build storage pool
+  community.libvirt.virt_pool:
+    command: build
+    name: "{{ libvirt_pool_name }}"
+    state: active

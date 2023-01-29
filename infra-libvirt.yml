@@ -1,0 +1,7 @@
+---
+- name: configure libvirt
+  gather_facts: true
+  hosts: hypervisor
+  become: yes
+  roles:
+    - libvirt

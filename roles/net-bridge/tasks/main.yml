@@ -1,0 +1,17 @@
+---
+- name: Configure master
+  community.general.nmcli:
+    conn_name: "{{ item.name }}"
+    ifname: "{{ item.name }}-br"
+    type: bridge
+    ip4: "{{ item.ip }}"
+    state: present
+  loop: "{{ bridges }}"
+- name: Configure slave
+  community.general.nmcli:
+    conn_name: "{{ item.name }}-slave"
+    type: bridge-slave
+    ifname: "{{ item.interface }}"
+    master: "{{ item.name }}-br"
+    state: present
+  loop: "{{ bridges }}"
