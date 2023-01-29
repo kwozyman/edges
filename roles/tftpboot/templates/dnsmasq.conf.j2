@@ -1,0 +1,24 @@
+listen-address={{ bootinfra_ip }}
+{% if tftpboot_enabled %}
+enable-tftp
+tftp-root=/tftpboot
+{% endif %}
+{% if dhcp_enabled %}
+dhcp-range={{ dhcp_range }}
+dhcp-no-override
+dhcp-authoritative
+log-dhcp
+dhcp-option=3,{{ bootinfra_ip }}
+dhcp-option=option:router,{{ bootinfra_ip }}
+dhcp-match=set:efi-x86_64,option:client-arch,7
+dhcp-match=set:efi-x86_64,option:client-arch,9
+dhcp-match=set:efi-x86,option:client-arch,6
+dhcp-match=set:bios,option:client-arch,0
+dhcp-boot=tag:bios,pxelinux.0
+{% endif %}
+{% for iso in tftpboot_iso %}
+dhcp-boot=tag:boot-{{ iso.name }},{{ iso.name }}/{{ iso.shim }}
+{% endfor %}
+{% for host in dhcp_hosts %}
+dhcp-host={{ host.mac }},{{ host.name }},{{ host.ip }},set:boot-{{ host.boot }}
+{% endfor %}

@@ -4,15 +4,13 @@ kind: Pod
 metadata:
   annotations:
     bind-mount-options:{{ eci_configdir }}/tftpboot.conf: z
-    bind-mount-options:{{ tftpboot_data }}: z
-    bind-mount-options:{{ tftpboot_iso_path}}: z
-    io.podman.annotations.autoremove/pxe-manu: "TRUE"
-    io.podman.annotations.init/pxe-manu: "FALSE"
-    io.podman.annotations.privileged/pxe-manu: "TRUE"
-    io.podman.annotations.publish-all/pxe-manu: "FALSE"
+    io.podman.annotations.autoremove/dnsmasq: "TRUE"
+    io.podman.annotations.init/dnsmasq: "FALSE"
+    io.podman.annotations.privileged/dnsmasq: "TRUE"
+    io.podman.annotations.publish-all/dnsmasq: "FALSE"
   labels:
-    app: tftpboot
-  name: tftpboot
+    app: dnsmasq-pod
+  name: dnsmasq-pod
 spec:
   containers:
   - command:
@@ -21,9 +19,13 @@ spec:
       - -c
       - "/usr/sbin/dnsmasq -d"
     image: {{ dnsmasq_image }}
-    name: cnt
+    name: dnsmasq
+    securityContext:
+      privileged: true
+      seLinuxOptions:
+        type: spc_t
     volumeMounts:
-    - mountPath: /etc/dnsmasq.d/tftpboot.conf
+    - mountPath: /etc/dnsmasq.d/dnsmasq.conf
       name: vol-config
       readOnly: true
     - mountPath: /data/iso/
@@ -35,7 +37,7 @@ spec:
   hostNetwork: true
   volumes:
   - hostPath:
-      path: "{{ eci_configdir }}/tftpboot.conf"
+      path: "{{ eci_configdir }}/dnsmasq.conf"
       type: File
     name: vol-config
   - hostPath:
