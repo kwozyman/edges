@@ -1,0 +1,7 @@
+---
+- name: config tftpboot
+  gather_facts: true
+  hosts: control
+  become: yes
+  roles:
+    - tftpboot

@@ -1,0 +1,40 @@
+---
+all:
+  hosts:
+    control:
+      ansible_host: intel-host-storage-1
+      eci_configdir: /etc/eci
+      tftpboot_ip: 192.168.1.18
+      tftpboot_download_enable: false
+      tftpboot_iso: 
+        - name: fedora-coreos
+          url: https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/37.20230110.3.1/x86_64/fedora-coreos-37.20230110.3.1-live.x86_64.iso
+          files:
+            - images/pxeboot/vmlinuz
+            - images/pxeboot/initrd.img
+            - images/ignition.img
+            - isolinux/isolinux.cfg
+            - EFI/fedora/grub.cfg
+          kernel: vmlinuz
+          kargs: mitigations=auto,nosmt coreos.liveiso=fedora-coreos-37.20230110.3.1 ignition.firstboot ignition.platform.id=metal
+          initrd:
+            - initrd.img
+            - ignition.img
+        - name: simplified-installer
+          files:
+            - images/pxeboot/vmlinuz
+            - images/pxeboot/initrd.img
+            - EFI/BOOT/grubx64.efi
+            - EFI/BOOT/BOOTX64.EFI
+            - EFI/BOOT/grub.cfg
+          kernel: vmlinuz
+          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.isoroot=RHEL-9-0-0-BaseOS-x86_64 coreos.inst.install_dev=/dev/vda coreos.inst.image_file=/run/media/iso/disk.img.xz coreos.inst.insecure fdo.manufacturing_server_url=http://192.168.100.177:8080 fdo.diun_pub_key_insecure=true quiet
+          initrd:
+            - initrd.img
+    hypervisor:
+      ansible_host: intel-host-storage-1
+      bridges:
+        - name: eci
+          ip: 192.168.1.18/24
+          interface: ens786f1
+      libvirt_pool_path: /var/ecivm

@@ -1,0 +1,21 @@
+function load_video {
+  insmod efi_gop
+  insmod efi_uga
+  insmod video_bochs
+  insmod video_cirrus
+  insmod all_video
+}
+
+load_video
+set gfxpayload=keep
+insmod gzio
+insmod part_gpt
+insmod ext2
+
+set timeout=60
+
+menuentry {{ item.name }} --class fedora --class gnu-linux --class gnu --class os {
+    linux {{ item.name }}/{{ item.kernel }} {{ item.kargs }}
+    initrd {% for initrd in item.initrd %}{{ item.name }}/{{ initrd }} {% endfor %}
+
+}

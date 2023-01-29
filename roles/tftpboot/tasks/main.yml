@@ -1,0 +1,45 @@
+---
+- name: iso directory
+  file:
+    path: "{{ tftpboot_iso_path }}"
+    state: directory
+- name: config directory
+  file:
+    path: "{{ eci_configdir }}"
+    state: directory
+- name: podman kube file
+  template:
+    src: tftpboot.yml.j2
+    dest: "{{ eci_configdir }}/tftpboot.yml"
+- name: tftpboot config
+  template:
+    src: tftpboot.conf.j2
+    dest: "{{ eci_configdir }}/tftpboot.conf"
+- name: tftpboot data directory
+  file:
+    path: "{{ tftpboot_data }}"
+    state: directory
+- name: download iso
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ tftpboot_iso_path }}/{{ item.name }}.iso"
+  loop: "{{ tftpboot_iso }}"
+  when: " {{ tftpboot_download_enable }} "
+  register: iso_refresh
+- name: unpack iso
+  containers.podman.podman_container:
+    name: tftpboot-unpack
+    recreate: true
+    image: "{{ dnsmasq_image }}"
+    volume:
+      - "{{ tftpboot_iso_path }}:/data/iso:ro,z"
+      - "{{ tftpboot_data }}:/tftpboot:z"
+    entrypoint: "7z"
+    command: "e /data/iso/{{ item.name }}.iso {{ item.files | join(' ') }} -o/tftpboot/{{ item.name }}"
+  loop: "{{ tftpboot_iso }}"
+  when: iso_refresh.changed
+- name: generate grub
+  template:
+    src: grub.cfg.j2
+    dest: "{{ tftpboot_data }}/{{ item.name }}/eci-grub.cfg"
+  loop: "{{ tftpboot_iso }}"

@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    bind-mount-options:{{ eci_configdir }}/tftpboot.conf: z
+    bind-mount-options:{{ tftpboot_data }}: z
+    bind-mount-options:{{ tftpboot_iso_path}}: z
+    io.podman.annotations.autoremove/pxe-manu: "TRUE"
+    io.podman.annotations.init/pxe-manu: "FALSE"
+    io.podman.annotations.privileged/pxe-manu: "TRUE"
+    io.podman.annotations.publish-all/pxe-manu: "FALSE"
+  labels:
+    app: tftpboot
+  name: tftpboot
+spec:
+  containers:
+  - command:
+      - /bin/bash
+    args:
+      - -c
+      - "/usr/sbin/dnsmasq -d"
+    image: {{ dnsmasq_image }}
+    name: cnt
+    volumeMounts:
+    - mountPath: /etc/dnsmasq.d/tftpboot.conf
+      name: vol-config
+      readOnly: true
+    - mountPath: /data/iso/
+      name: vol-iso
+      readOnly: true
+    - mountPath: /tftpboot
+      name: vol-data
+      readOnly: true
+  hostNetwork: true
+  volumes:
+  - hostPath:
+      path: "{{ eci_configdir }}/tftpboot.conf"
+      type: File
+    name: vol-config
+  - hostPath:
+      path: {{ tftpboot_data }}
+      type: File
+    name: vol-data
+  - hostPath:
+      path: {{ tftpboot_iso_path }}
+      type: File
+    name: vol-iso

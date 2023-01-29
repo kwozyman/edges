@@ -1,0 +1,5 @@
+---
+dnsmasq_image: quay.io/cgament/eci-tftpboot
+tftpboot_iso_path: /var/eci/iso
+tftpboot_data: /tftpboot
+tftpboot_download_enable: true
