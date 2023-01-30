@@ -6,11 +6,11 @@ metadata:
     bind-mount-options:{{ eci_configdir }}/tftpboot.conf: z
     io.podman.annotations.autoremove/dnsmasq: "TRUE"
     io.podman.annotations.init/dnsmasq: "FALSE"
-    io.podman.annotations.privileged/dnsmasq: "TRUE"
-    io.podman.annotations.publish-all/dnsmasq: "FALSE"
+    io.podman.annotations.privileged/bootinfra: "TRUE"
+    io.podman.annotations.publish-all/bootinfra: "FALSE"
   labels:
-    app: dnsmasq-pod
-  name: dnsmasq-pod
+    app: bootinfra
+  name: bootinfra
 spec:
   containers:
   - command:
@@ -34,6 +34,16 @@ spec:
     - mountPath: /tftpboot
       name: vol-data
       readOnly: true
+  - name: web
+    image: docker.io/library/nginx
+    args:
+      - nginx
+      - -g
+      - daemon off;
+    volumeMounts:
+      - mountPath: /usr/share/nginx/html
+        name: vol-data
+        readOnly: true
   hostNetwork: true
   volumes:
   - hostPath:

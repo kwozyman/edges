@@ -26,6 +26,25 @@
     command: "e /data/iso/{{ item.name }}.iso {{ item.files | join(' ') }} -o/tftpboot/{{ item.name }}"
   loop: "{{ tftpboot_iso }}"
   when: iso_refresh.changed
+- name: ensure rootfs directory
+  file:
+    path: "{{ tftpboot_data }}/{{ item.name }}/{{ item.rootfs_dir }}"
+    state: directory
+  when: item.rootfs_dir is defined
+  loop: "{{ tftpboot_iso }}"
+- name: ensure rootfs
+  file:
+    src: "{{ tftpboot_data }}/{{ item.name }}/{{ item.rootfs }}"
+    dest: "{{ tftpboot_data }}/{{ item.name }}/{{ item.rootfs_dir }}/{{ item.rootfs }}"
+    state: hard
+  when: item.rootfs_dir is defined
+  loop: "{{ tftpboot_iso }}"
+- name: ensure web server readable
+  file:
+    path: "{{ tftpboot_data }}/{{ item.name }}"
+    state: directory
+    mode: 0755
+  loop: "{{ tftpboot_iso }}"
 - name: generate grub
   template:
     src: grub.cfg.j2

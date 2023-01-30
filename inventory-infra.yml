@@ -9,30 +9,47 @@ all:
       tftpboot_enabled: true
       tftpboot_download_enable: true
       tftpboot_iso: 
-        - name: fedora-coreos
-          url: https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/37.20230110.3.1/x86_64/fedora-coreos-37.20230110.3.1-live.x86_64.iso
+#        - name: fedora-coreos
+#          url: https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/37.20230110.3.1/x86_64/fedora-coreos-37.20230110.3.1-live.x86_64.iso
+#          files:
+#            - images/pxeboot/vmlinuz
+#            - images/pxeboot/initrd.img
+#            - images/pxeboot/rootfs.img
+#            - images/ignition.img
+#            - images/efiboot.img
+#          shim: BOOTX64.EFI
+#          kernel: vmlinuz
+#          kargs: mitigations=auto,nosmt coreos.live.rootfs_url=http://{{ bootinfra_ip }}/fedora-coreos/rootfs.img ignition.firstboot ignition.platform.id=metal
+#          initrd:
+#            - initrd.img
+#            - ignition.img
+        - name: rhel-install
+          url: http://192.168.150.237:8000/rhel-baseos-9.1-x86_64-boot.iso
           files:
             - images/pxeboot/vmlinuz
             - images/pxeboot/initrd.img
-            - images/ignition.img
-            - images/efiboot.img
-            - isolinux/isolinux.cfg
+            - images/install.img
+            - EFI/BOOT/BOOTX64.EFI
+            - EFI/BOOT/grubx64.efi
           shim: BOOTX64.EFI
           kernel: vmlinuz
-          kargs: mitigations=auto,nosmt coreos.liveiso=fedora-coreos-37.20230110.3.1 ignition.firstboot ignition.platform.id=metal
+          kargs: "inst.stage2=http://{{ bootinfra_ip }}/rhel-install rd.live.check"
           initrd:
             - initrd.img
-            - ignition.img
+          rootfs: install.img
+          rootfs_dir: images/
         - name: simplified-installer
           url: http://192.168.150.237:8000/d994f891-a5ab-4742-ab1e-c213f2948501-simplified-installer.iso
           files:
             - images/pxeboot/vmlinuz
             - images/pxeboot/initrd.img
+            - disk.img.xz
             - EFI/BOOT/grubx64.efi
             - EFI/BOOT/BOOTX64.EFI
           shim: BOOTX64.EFI
           kernel: vmlinuz
-          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.isoroot=RHEL-9-0-0-BaseOS-x86_64 coreos.inst.install_dev=/dev/vda coreos.inst.image_file=/run/media/iso/disk.img.xz coreos.inst.insecure fdo.manufacturing_server_url=http://192.168.100.177:8080 fdo.diun_pub_key_insecure=true quiet
+          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.install_dev=/dev/vda coreos.inst.image_url=http://{{ bootinfra_ip }}/simplified-installer/disk.img.xz coreos.inst.insecure fdo.manufacturing_server_url=http://192.168.100.177:8080 fdo.diun_pub_key_insecure=true
+          rootfs: disk.img.xz
           initrd:
             - initrd.img
       dhcp_enabled: true
