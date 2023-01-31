@@ -14,6 +14,8 @@
 - name: setup tftpboot
   include_tasks: tftpboot.yml
   when: tftpboot_enabled
+- name: setup firewall
+  include_tasks: firewall.yml
 - name: dnsmasq service
   service:
     name: podman-kube@-etc-eci-dnsmasq.yml.service

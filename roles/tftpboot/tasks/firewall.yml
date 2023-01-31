@@ -1,0 +1,25 @@
+---
+- name: firewall config for DHCP
+  ansible.posix.firewalld:
+    service: dhcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+- name: firewall config for TFTP
+  ansible.posix.firewalld:
+    service: tftp
+    permanent: yes
+    immediate: yes
+    state: enabled
+- name: firewall config for DNS
+  ansible.posix.firewalld:
+    service: dns
+    permanent: yes
+    immediate: yes
+    state: enabled
+- name: firewall config for HTTP
+  ansible.posix.firewalld:
+    service: http
+    permanent: yes
+    immediate: yes
+    state: enabled
