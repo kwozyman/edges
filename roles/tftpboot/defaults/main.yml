@@ -5,3 +5,6 @@ tftpboot_iso_path: /var/eci/iso
 tftpboot_data: /tftpboot
 tftpboot_download_enable: true
 dhcp_enabled: true
+dns_enabled: true
+dns_domain: redhat.com
+dns_server: 8.8.8.8

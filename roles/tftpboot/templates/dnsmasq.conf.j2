@@ -22,3 +22,11 @@ dhcp-boot=tag:boot-{{ iso.name }},{{ iso.name }}/{{ iso.shim }}
 {% for host in dhcp_hosts %}
 dhcp-host={{ host.mac }},{{ host.name }},{{ host.ip }},set:boot-{{ host.boot }}
 {% endfor %}
+{% if dns_enabled %}
+local=/{{ dns_domain }}/
+server={{ dns_server }}
+{% for entry in dns_static %}
+address=/{{ entry.name }}/{{ entry.ip }}
+{% endfor %}
+log-queries
+{% endif %}
