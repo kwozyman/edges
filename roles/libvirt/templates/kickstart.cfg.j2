@@ -20,12 +20,19 @@ clearpart --none --initlabel
 # System timezone
 timezone Europe/Zurich --utc
 
+# Network config
+network --hostname={{ vm.name }}
+{% for network in vm.networks %}
+network --bootproto=static --ip={{ network.ip }} --netmask=255.255.255.0 --nameserver={{ network.dns | default('8.8.8.8')}} --device={{ vm_mac_address[network.name] }} {% if vm_gw_address[network.name] != '' %}--gateway={{ vm_gw_address[network.name] }}{% endif %}
+
+{% endfor %}
+
 # Root credentials
-{% if item.passwd is defined %}
-rootpw --iscrypted --allow-ssh "{{ item.passwd }}"
+{% if vm.passwd is defined %}
+rootpw --iscrypted --allow-ssh "{{ vm.passwd }}"
 {% endif %}
-{% if item.sshkey is defined %}
-sshkey "{{ item.sshkey }}"
+{% if vm.sshkey is defined %}
+sshkey --username root "{{ vm.sshkey }}"
 {% endif %}
 
 eula --agreed

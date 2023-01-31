@@ -1,4 +1,5 @@
 ---
+libvirt_setup_enable: true
 libvirt_pool_name: eci
 libvirt_pool_path: /var/lib/libvirt/eci-images
 libvirt_networks:

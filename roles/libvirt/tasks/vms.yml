@@ -1,47 +1,50 @@
 ---
-- name: render kickstart files
+- name: "{{ vm.name }} -- generate mac address"
+  set_fact:
+    vm_mac_address: "{{ vm_mac_address | default({}) | combine({ item.name : '52:54:00' | community.general.random_mac }) }}"
+  loop: "{{ vm.networks }}"
+- name: "{{ vm.name }} -- generate gateway address"
+  set_fact:
+    vm_gw_address: "{{ vm_gw_address | default({}) | combine({ item.name : item.ip | default('')}) }}"
+  loop: "{{ libvirt_networks }}"
+- name: "{{ vm.name }} -- render kickstart file"
   template:
     src: kickstart.cfg.j2
-    dest: "{{ libvirt_pool_path }}/{{ item.name }}-ks.cfg"
-  loop: "{{ libvirt_vms }}"
-- name: create VM disks
+    dest: "{{ libvirt_pool_path }}/{{ vm.name }}-ks.cfg"
+- name: "{{ vm.name }} -- create VM disk"
   command:
     argv:
       - /usr/bin/virsh
       - vol-create-as
       - --name
-      - "{{ item.name }}.qcow2"
+      - "{{ vm.name }}.qcow2"
       - --pool
       - "{{ libvirt_pool_name }}"
       - --capacity
-      - "{{ item.disk }}G"
+      - "{{ vm.disk }}G"
       - --format
       - qcow2
-  loop: "{{ libvirt_vms }}"
-- name: create VMs
-  command:
-    argv:
-      - /usr/bin/virt-install
-      - --name
-      - "{{ item.name }}"
-      - --boot
-      - uefi
-      - --memory
-      - "{{ item.memory }}"
-      - --vcpus
-      - "{{ item.cpu }}"
-      - --location
-      - "{{ libvirt_pool_path }}/{{ item.iso }}.iso"
-      - --disk
-      - "size={{ item.disk }},path={{ libvirt_pool_path }}/{{ item.name }}.qcow2"
-      - --network
-      - network={{ item.networks[0].name }},model=virtio
-      - --console
-      - pty,target_type=serial
-      - --graphics
-      - spice
-      - --initrd-inject
-      - "{{ libvirt_pool_path }}/{{ item.name }}-ks.cfg"
-      - --extra-args
-      - "inst.ks=file:/{{ item.name }}-ks.cfg"
-  loop: "{{ libvirt_vms }}"
+  args:
+    creates: "{{ libvirt_pool_path }}/{{ vm.name }}.qcow2"
+- name: "{{ vm.name }} -- generate virt-install network"
+  set_fact:
+    virt_install_network: "{{ virt_install_network | default('') }} --network model=virtio,network={{ item.name }},mac={{ vm_mac_address[item.name] }}"
+  loop: "{{ vm.networks }}"
+- name: "{{ vm.name }} -- generate virt-install command"
+  set_fact:
+    virt_install_cmd: >
+      /usr/bin/virt-install --name {{ vm.name }}
+      --boot uefi --console pty,target_type=serial --graphics spice
+      --memory {{ vm.memory }}
+      --vcpus {{ vm.cpu }}
+      --location {{ libvirt_pool_path }}/{{ vm.iso }}.iso
+      --disk size={{ vm.disk }},path={{ libvirt_pool_path }}/{{ vm.name }}.qcow2
+      --initrd-inject {{ libvirt_pool_path }}/{{ vm.name }}-ks.cfg
+      --extra-args inst.ks=file:/{{ vm.name }}-ks.cfg
+      {{ virt_install_network }}
+- debug:
+    msg: "{{ virt_install_cmd }}"
+
+- name: "{{ vm.name }} -- start vm install"
+  shell:
+    cmd: "{{ virt_install_cmd }}"

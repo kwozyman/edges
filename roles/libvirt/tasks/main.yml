@@ -1,18 +1,13 @@
 ---
-- name: install libvirt
-  package:
-    name:
-      - libvirt
-      - virt-install
-    state: present
-- name: libvirt service
-  service:
-    name: libvirtd
-    state: started
-    enabled: yes
+- name: setup libvirt
+  include_tasks: setup.yml
+  when: "{{ libvirt_setup_enable }}"
 - name: setup libvirt storage
   include_tasks: storage.yml
 - name: setup libvirt networks
   include_tasks: networks.yml
 - name: create vms
   include_tasks: vms.yml
+  loop: "{{ libvirt_vms }}"
+  loop_control:
+    loop_var: vm
