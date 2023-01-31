@@ -14,9 +14,6 @@
 - name: setup tftpboot
   include_tasks: tftpboot.yml
   when: tftpboot_enabled
-- name: setup dhcp
-  include_tasks: dhcp.yml
-  when: dhcp_enabled
 - name: dnsmasq service
   service:
     name: podman-kube@-etc-eci-dnsmasq.yml.service
