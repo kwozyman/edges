@@ -1,0 +1,12 @@
+---
+- name: install libvirt
+  package:
+    name:
+      - libvirt
+      - virt-install
+    state: present
+- name: libvirt service
+  service:
+    name: libvirtd
+    state: started
+    enabled: yes
