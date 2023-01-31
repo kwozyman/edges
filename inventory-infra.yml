@@ -1,6 +1,35 @@
 ---
 all:
   hosts:
+    hypervisor:
+      ansible_host: cylon
+      bridges:
+        - name: eci
+          ip: 192.168.5.1/24
+          interface: enp7s0
+      libvirt_pool_path: /var/eci/vm
+      libvirt_networks:
+        - name: eci-nat
+          cidr: 192.168.101.0/24
+          forward_mode: nat
+          ip: 192.168.101.1
+        - name: eci-main
+          cidr: 192.168.6.0/24
+      libvirt_isos:
+        - name: rhel91
+          #url: https://developers.redhat.com/content-gateway/file/rhel/9.1/rhel-baseos-9.1-x86_64-dvd.iso
+          url: https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.1-x86_64-dvd.iso
+      libvirt_vms:
+        - name: bootinfra
+          iso: rhel91
+          memory: 2048
+          cpu: 2
+          disk: 50
+          networks:
+            - name: eci-nat
+              ip: 192.168.100.1
+          #passwd: $6$8Js/feNOYaM7iaMy$dFkIcAUfKyFWwgWzSKoTGf2h90fPEvr0Hyilx4udLzU4EGf6B/kFUK3OFkcPvnyk5l9wc2sc23/34vBx9sba./
+          sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMPkccS+SKCZEWGJzH7ew0eNPItvqeGFpOhZprmL9owO"
     control:
       ansible_host: eci-control
       ansible_user: root
@@ -51,10 +80,3 @@ all:
           ip: 192.168.1.18
         - name: apps.eci.rh-intel.com
           ip: 192.168.1.18
-    hypervisor:
-      ansible_host: intel-host-control-1
-      bridges:
-        - name: eci
-          ip: 192.168.1.21/24
-          interface: ens786f1
-      libvirt_pool_path: /var/eci/vm

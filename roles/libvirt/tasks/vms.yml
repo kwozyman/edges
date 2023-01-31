@@ -1,0 +1,47 @@
+---
+- name: render kickstart files
+  template:
+    src: kickstart.cfg.j2
+    dest: "{{ libvirt_pool_path }}/{{ item.name }}-ks.cfg"
+  loop: "{{ libvirt_vms }}"
+- name: create VM disks
+  command:
+    argv:
+      - /usr/bin/virsh
+      - vol-create-as
+      - --name
+      - "{{ item.name }}.qcow2"
+      - --pool
+      - "{{ libvirt_pool_name }}"
+      - --capacity
+      - "{{ item.disk }}G"
+      - --format
+      - qcow2
+  loop: "{{ libvirt_vms }}"
+- name: create VMs
+  command:
+    argv:
+      - /usr/bin/virt-install
+      - --name
+      - "{{ item.name }}"
+      - --boot
+      - uefi
+      - --memory
+      - "{{ item.memory }}"
+      - --vcpus
+      - "{{ item.cpu }}"
+      - --location
+      - "{{ libvirt_pool_path }}/{{ item.iso }}.iso"
+      - --disk
+      - "size={{ item.disk }},path={{ libvirt_pool_path }}/{{ item.name }}.qcow2"
+      - --network
+      - network={{ item.networks[0].name }},model=virtio
+      - --console
+      - pty,target_type=serial
+      - --graphics
+      - spice
+      - --initrd-inject
+      - "{{ libvirt_pool_path }}/{{ item.name }}-ks.cfg"
+      - --extra-args
+      - "inst.ks=file:/{{ item.name }}-ks.cfg"
+  loop: "{{ libvirt_vms }}"

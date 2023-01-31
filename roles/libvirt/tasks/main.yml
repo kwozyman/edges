@@ -1,11 +1,18 @@
 ---
-- name: define storage pool
-  community.libvirt.virt_pool:
-    command: define
-    name: "{{ libvirt_pool_name }}"
-    xml: '{{ lookup("template", "storage-pool.xml.j2") }}'
-- name: build storage pool
-  community.libvirt.virt_pool:
-    command: build
-    name: "{{ libvirt_pool_name }}"
-    state: active
+- name: install libvirt
+  package:
+    name:
+      - libvirt
+      - virt-install
+    state: present
+- name: libvirt service
+  service:
+    name: libvirtd
+    state: started
+    enabled: yes
+- name: setup libvirt storage
+  include_tasks: storage.yml
+- name: setup libvirt networks
+  include_tasks: networks.yml
+- name: create vms
+  include_tasks: vms.yml

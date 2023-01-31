@@ -1,0 +1,16 @@
+<network>
+  <name>{{ item.name }}</name>
+{% if item.forward_mode is defined %}
+  <forward mode="{{ item.forward_mode }}">
+  {% if item.forward_mode == "nat" %}
+    <nat>
+      <port start="1024" end="65535"/>
+    </nat>
+  {% endif %}  
+  </forward>
+{% endif %}
+  <bridge name="virbr-{{ item.name }}" stp="on" delay="0"/>
+{% if item.ip is defined %}
+  <ip address="{{ item.ip }}" netmask="255.255.255.0" />
+{% endif %}
+</network>

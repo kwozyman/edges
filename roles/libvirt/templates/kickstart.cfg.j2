@@ -1,0 +1,32 @@
+text
+
+%addon com_redhat_kdump --disable
+%end
+
+keyboard --xlayouts='us'
+lang en_US.UTF-8
+
+%packages
+@^server-product-environment
+%end
+
+# Run the Setup Agent on first boot
+firstboot --enable
+
+ignoredisk --only-use=vda
+autopart
+clearpart --none --initlabel
+
+# System timezone
+timezone Europe/Zurich --utc
+
+# Root credentials
+{% if item.passwd is defined %}
+rootpw --iscrypted --allow-ssh "{{ item.passwd }}"
+{% endif %}
+{% if item.sshkey is defined %}
+sshkey "{{ item.sshkey }}"
+{% endif %}
+
+eula --agreed
+reboot --eject

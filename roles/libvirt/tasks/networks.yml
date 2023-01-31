@@ -1,0 +1,12 @@
+---
+- name: define network
+  community.libvirt.virt_net:
+    command: define
+    name: "{{ item.name }}"
+    xml: '{{ lookup("template", "network.xml.j2") }}'
+  loop: "{{ libvirt_networks }}"
+- name: start network
+  community.libvirt.virt_net:
+    command: create
+    name: "{{ item.name }}"
+  loop: "{{ libvirt_networks }}"

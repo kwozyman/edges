@@ -1,0 +1,20 @@
+---
+- name: storage pool directory
+  file:
+    path: "{{ libvirt_pool_path }}"
+    state: directory
+- name: define storage pool
+  community.libvirt.virt_pool:
+    command: define
+    name: "{{ libvirt_pool_name }}"
+    xml: '{{ lookup("template", "storage-pool.xml.j2") }}'
+- name: build storage pool
+  community.libvirt.virt_pool:
+    command: build
+    name: "{{ libvirt_pool_name }}"
+    state: active
+- name: download required isos
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ libvirt_pool_path }}/{{ item.name }}.iso"
+  loop: "{{ libvirt_isos }}"
