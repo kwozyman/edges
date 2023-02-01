@@ -1,5 +1,5 @@
 ---
-- name: config tftpboot
+- name: setup bootinfra
   gather_facts: true
   hosts: control
   become: yes

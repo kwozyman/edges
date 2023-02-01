@@ -1,5 +1,5 @@
 ---
-- name: configure libvirt
+- name: setup libvirt hosts
   gather_facts: true
   hosts: hypervisor
   become: yes
