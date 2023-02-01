@@ -2,18 +2,19 @@
 all:
   hosts:
     hypervisor:
-      ansible_host: cylon
+      ansible_host: hypervisor
       bridges:
         - name: eci
           ip: 192.168.5.1/24
           interface: enp7s0
+      libvirt_setup_enable: true
       libvirt_pool_path: /var/eci/vm
       libvirt_networks:
-        - name: eci-nat
+        - name: eci-mgmt
           cidr: 192.168.101.0/24
           forward_mode: nat
           ip: 192.168.101.1
-        - name: eci-main
+        - name: eci
           cidr: 192.168.6.0/24
       libvirt_isos:
         - name: rhel91
@@ -26,20 +27,23 @@ all:
           cpu: 2
           disk: 50
           networks:
-            - name: eci-nat
-              ip: 192.168.100.1
-          #passwd: $6$8Js/feNOYaM7iaMy$dFkIcAUfKyFWwgWzSKoTGf2h90fPEvr0Hyilx4udLzU4EGf6B/kFUK3OFkcPvnyk5l9wc2sc23/34vBx9sba./
+            - name: eci-mgmt
+              ip: 192.168.101.2
+            - name: eci
+              ip: 192.168.6.1
+          passwd: $6$8Js/feNOYaM7iaMy$dFkIcAUfKyFWwgWzSKoTGf2h90fPEvr0Hyilx4udLzU4EGf6B/kFUK3OFkcPvnyk5l9wc2sc23/34vBx9sba./
           sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMPkccS+SKCZEWGJzH7ew0eNPItvqeGFpOhZprmL9owO"
     control:
-      ansible_host: eci-control
+      ansible_host: bootinfra
       ansible_user: root
       eci_configdir: /etc/eci
-      bootinfra_ip: 192.168.5.1
+      bootinfra_ip: 192.168.6.1
       tftpboot_enabled: true
-      tftpboot_download_enable: false
+      tftpboot_download_enable: true
       tftpboot_iso: 
         - name: rhel-install
-          url: http://192.168.150.237:8000/rhel-baseos-9.1-x86_64-boot.iso
+          #url: http://192.168.150.237:8000/rhel-baseos-9.1-x86_64-boot.iso
+          url: https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.1-x86_64-dvd.iso
           files:
             - images/pxeboot/vmlinuz
             - images/pxeboot/initrd.img
@@ -53,27 +57,31 @@ all:
             - initrd.img
           rootfs: install.img
           rootfs_dir: images/
-        - name: simplified-installer
-          url: http://192.168.150.237:8000/d994f891-a5ab-4742-ab1e-c213f2948501-simplified-installer.iso
-          files:
-            - images/pxeboot/vmlinuz
-            - images/pxeboot/initrd.img
-            - disk.img.xz
-            - EFI/BOOT/grubx64.efi
-            - EFI/BOOT/BOOTX64.EFI
-          shim: BOOTX64.EFI
-          kernel: vmlinuz
-          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.install_dev=/dev/vda coreos.inst.image_url=http://{{ bootinfra_ip }}/simplified-installer/disk.img.xz coreos.inst.insecure fdo.manufacturing_server_url=http://192.168.100.177:8080 fdo.diun_pub_key_insecure=true
-          rootfs: disk.img.xz
-          initrd:
-            - initrd.img
+#        - name: simplified-installer
+#          url: http://192.168.150.237:8000/d994f891-a5ab-4742-ab1e-c213f2948501-simplified-installer.iso
+#          files:
+#            - images/pxeboot/vmlinuz
+#            - images/pxeboot/initrd.img
+#            - disk.img.xz
+#            - EFI/BOOT/grubx64.efi
+#            - EFI/BOOT/BOOTX64.EFI
+#          shim: BOOTX64.EFI
+#          kernel: vmlinuz
+#          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.install_dev=/dev/vda coreos.inst.image_url=http://{{ bootinfra_ip }}/simplified-installer/disk.img.xz coreos.inst.insecure fdo.manufacturing_server_url=http://192.168.100.177:8080 fdo.diun_pub_key_insecure=true
+#          rootfs: disk.img.xz
+#          initrd:
+#            - initrd.img
       dhcp_enabled: true
       dhcp_hosts:
         - name: dhcp-test
           mac: 52:54:00:29:24:96
-          ip: 192.168.5.50
-          boot: fedora-coreos
-      dhcp_range: 192.168.5.0,static
+          ip: 192.168.6.50
+          boot: rhel-install
+        - name: testinfra
+          mac: 52:54:00:70:30:b0
+          ip: 192.168.6.51
+          boot: rhel-install
+      dhcp_range: "{{ bootinfra_ip }},static"
       dns_enabled: true
       dns_static:
         - name: eci.rh-intel.com
