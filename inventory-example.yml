@@ -33,7 +33,7 @@ all:
               ip: 192.168.6.1
           passwd: $6$8Js/feNOYaM7iaMy$dFkIcAUfKyFWwgWzSKoTGf2h90fPEvr0Hyilx4udLzU4EGf6B/kFUK3OFkcPvnyk5l9wc2sc23/34vBx9sba./
           sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMPkccS+SKCZEWGJzH7ew0eNPItvqeGFpOhZprmL9owO"
-    control:
+    bootinfra:
       ansible_host: bootinfra
       ansible_user: root
       eci_configdir: /etc/eci

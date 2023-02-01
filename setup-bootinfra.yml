@@ -1,7 +1,7 @@
 ---
 - name: setup bootinfra
   gather_facts: true
-  hosts: control
+  hosts: bootinfra
   become: yes
   roles:
     - tftpboot
