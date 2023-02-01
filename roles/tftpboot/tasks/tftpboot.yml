@@ -12,7 +12,7 @@
     url: "{{ item.url }}"
     dest: "{{ tftpboot_iso_path }}/{{ item.name }}.iso"
   loop: "{{ tftpboot_iso }}"
-  when: "{{ tftpboot_download_enable }}"
+  when: tftpboot_download_enable
   register: iso_refresh
 - name: unpack iso
   containers.podman.podman_container:
