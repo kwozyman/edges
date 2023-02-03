@@ -1,7 +1,7 @@
 ---
 - name: setup libvirt
   include_tasks: setup.yml
-  when: "{{ libvirt_setup_enable }}"
+  when: libvirt_setup_enable
 - name: setup libvirt storage
   include_tasks: storage.yml
 - name: setup libvirt networks
