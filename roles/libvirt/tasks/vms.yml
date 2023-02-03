@@ -1,7 +1,10 @@
 ---
+- name: "{{ vm.name }} -- clear macs"
+  set_fact:
+    vm_mac_address: {}
 - name: "{{ vm.name }} -- generate mac address"
   set_fact:
-    vm_mac_address: "{{ vm_mac_address | default({}) | combine({ item.name : '52:54:00' | community.general.random_mac }) }}"
+    vm_mac_address: "{{ vm_mac_address | combine({ item.name : '52:54:00' | community.general.random_mac }) }}"
   loop: "{{ vm.networks }}"
 - name: "{{ vm.name }} -- generate gateway address"
   set_fact:
@@ -26,9 +29,12 @@
       - qcow2
   args:
     creates: "{{ libvirt_pool_path }}/{{ vm.name }}.qcow2"
+- name: "{{ vm.name }} -- reset virt-install network command"
+  set_fact:
+    virt_install_network: ''
 - name: "{{ vm.name }} -- generate virt-install network"
   set_fact:
-    virt_install_network: "{{ virt_install_network | default('') }} --network model=virtio,network={{ item.name }},mac={{ vm_mac_address[item.name] }}"
+    virt_install_network: "{{ virt_install_network }} --network model=virtio,network={{ item.name }},mac={{ vm_mac_address[item.name] }}"
   loop: "{{ vm.networks }}"
 - name: "{{ vm.name }} -- generate virt-install command"
   set_fact:
@@ -44,7 +50,6 @@
       {{ virt_install_network }}
 - debug:
     msg: "{{ virt_install_cmd }}"
-
 - name: "{{ vm.name }} -- start vm install"
   shell:
     cmd: "{{ virt_install_cmd }}"
