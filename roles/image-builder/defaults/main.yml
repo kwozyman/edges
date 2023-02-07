@@ -1,0 +1,4 @@
+---
+builder_setup: true
+builder_blueprints_dir: /etc/eci/blueprints
+builder_images_dir: /var/eci/images

@@ -1,0 +1,51 @@
+---
+#- name: "compose image {{ image.name }}"
+#  ansible.builtin.command: "composer-cli compose start {{ image.blueprint_name }} edge-container -j"
+#  register: _image_compose
+#
+#- ansible.builtin.set_fact:
+#    base_compose_id: "{{ _image_compose.stdout | from_json | community.general.json_query('body.build_id')}}"
+#
+#- name: Wait for the compose {{ base_compose_id }} to finish
+#  shell: composer-cli compose status | grep {{ base_compose_id }} | awk '{print $2}'
+#  register: _compose_status_output
+#  until: _compose_status_output.stdout in ["FINISHED", "FAILED"]
+#  delay: 30
+#  retries: 60
+#
+#- name: Download the base image {{ image.name }}
+#  ansible.builtin.command: composer-cli compose image {{ base_compose_id }}
+#  args:
+#    chdir: "{{ builder_images_dir }}"
+
+- set_fact:
+    base_compose_id: a5bc6f18-1c2d-458b-8aff-b17b9f6140b9
+
+- name: load podman ostree web server for base image {{ image.name }}
+  ansible.builtin.command: podman load -i {{ builder_images_dir }}/{{ base_compose_id }}-container.tar
+  register: _container_image_output
+
+- ansible.builtin.set_fact:
+    container_image_id: "{{ _container_image_output.stdout.split('\n')[-1].split(':')[-1] }}"
+
+- name: Run Web server in container for {{ image.name }}
+  ansible.builtin.shell: podman run --replace --rm -d --name {{ image.blueprint_name }} -p 8090:8080 {{ container_image_id }}
+
+- name: "compose installer for {{ image.name }}"
+  ansible.builtin.command: "composer-cli compose start-ostree iso edge-simplified-installer --ref rocky/9/x86_64/edge --url http://localhost:8090/repo/ -j"
+  register: _image_compose
+
+- name: Wait for the compose {{ base_compose_id }} to finish
+  shell: composer-cli compose status | grep {{ base_compose_id }} | awk '{print $2}'
+  register: _compose_status_output
+  until: _compose_status_output.stdout in ["FINISHED", "FAILED"]
+  delay: 30
+  retries: 60
+
+- name: Download the base image {{ image.name }}
+  ansible.builtin.command: composer-cli compose image {{ base_compose_id }}
+  args:
+    chdir: "{{ builder_images_dir }}"
+
+- name: Stop webserver for {{ image.name }}
+  command: "podman stop {{ image.blueprint_name }}"

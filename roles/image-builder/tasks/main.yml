@@ -1,0 +1,16 @@
+---
+- name: Setup image builder
+  include_tasks: setup.yml
+  when: builder_setup
+
+- name: Update blueprints
+  include_tasks: blueprints.yml
+  loop: "{{ builder_blueprints }}"
+  loop_control:
+    loop_var: blueprint
+
+- name: Update images
+  include_tasks: images.yml
+  loop: "{{ builder_blueprints }}"
+  loop_control:
+    loop_var: image

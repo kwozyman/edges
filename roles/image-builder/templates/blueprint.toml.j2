@@ -1,0 +1,13 @@
+name = "{{ blueprint.name }}"
+description = "{{ blueprint.description | default('RHEL Edges ECI image') }}"
+version = "0.0.1"
+modules = []
+groups = []
+
+[[packages]]
+name = "subscription-manager"
+version = "*"
+
+[[customizations.sshkey]]
+user = "root"
+key = "{{ sshkey }}"

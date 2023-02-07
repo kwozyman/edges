@@ -1,0 +1,31 @@
+---
+- name: Install packages
+  ansible.builtin.package:
+    name:
+      - osbuild-composer
+      - composer-cli
+      - podman
+      - skopeo
+    state: present
+
+- name: Start composer service
+  ansible.builtin.systemd:
+    name: osbuild-composer.socket
+    state: started
+    enabled: true
+
+- name: Start composer local worker service
+  ansible.builtin.systemd:
+    name: osbuild-local-worker.socket
+    state: started
+    enabled: true
+
+- name: Ensure image directory
+  file:
+    path: "{{ builder_images_dir }}"
+    state: directory
+
+- name: Ensure blueprints directory
+  file:
+    path: "{{ builder_blueprints_dir }}"
+    state: directory

@@ -1,0 +1,16 @@
+---
+- name: "Update blueprint {{ blueprint.name }}"
+  template:
+    src: blueprint.toml.j2
+    dest: "{{ builder_blueprints_dir }}/{{ blueprint.name }}.toml"
+
+- name: "Push blueprint {{ blueprint.name }}"
+  command: "composer-cli blueprints push {{ builder_blueprints_dir }}/{{ blueprint.name }}.toml"
+
+- name: "Update blueprint {{ blueprint.name }}-iso"
+  template:
+    src: blueprint-iso.toml.j2
+    dest: "{{ builder_blueprints_dir }}/{{ blueprint.name }}-iso.toml"
+
+- name: "Push blueprint {{ blueprint.name }}-iso"
+  command: "composer-cli blueprints push {{ builder_blueprints_dir }}/{{ blueprint.name }}-iso.toml"
