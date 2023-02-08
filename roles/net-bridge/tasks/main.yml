@@ -6,7 +6,8 @@
     type: bridge
     ip4: "{{ item.ip }}"
     state: present
-    stp: "{{ item.stp }}"
+    stp: "{{ item.stp | default('true') }}"
+    priority: "{{ item.priority | default('32768') }}"
   loop: "{{ bridges }}"
 - name: Configure slave
   community.general.nmcli:
@@ -15,5 +16,6 @@
     ifname: "{{ item.interface }}"
     master: "br-{{ item.name }}"
     state: present
-    stp: "{{ item.stp }}"
+    stp: "{{ item.stp | default('true') }}"
+    priority: "{{ item.priority | default('32768') }}"
   loop: "{{ bridges }}"
