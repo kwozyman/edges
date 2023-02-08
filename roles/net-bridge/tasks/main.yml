@@ -6,6 +6,7 @@
     type: bridge
     ip4: "{{ item.ip }}"
     state: present
+    stp: "{{ item.stp }}"
   loop: "{{ bridges }}"
 - name: Configure slave
   community.general.nmcli:
@@ -14,4 +15,5 @@
     ifname: "{{ item.interface }}"
     master: "br-{{ item.name }}"
     state: present
+    stp: "{{ item.stp }}"
   loop: "{{ bridges }}"
