@@ -1,0 +1,18 @@
+---
+- name: NFS server installed
+  ansible.builtin.yum:
+    name:
+      - nfs-utils
+      - nfs4-acl-tools
+    state: present
+- name: share directory exists
+  ansible.builtin.file:
+    path: "{{ nfs_dir }}"
+    state: directory
+    owner: root
+    group: root
+- name: add to export
+  ansible.builtin.lineinfile:
+    path: /etc/exports
+    state: present
+    line: "{{ nfs_dir }} {{ nfs_cidr | default ('0.0.0.0') }}({{ nfs_options }})"

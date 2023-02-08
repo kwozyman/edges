@@ -1,0 +1,4 @@
+---
+nfs_dir: /var/eci/sharedstorage
+nfs_cidr: '0.0.0.0/0'
+nfs_options: ''
