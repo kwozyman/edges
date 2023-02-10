@@ -5,14 +5,31 @@ Quick setup
 ---
 
 ```
-ansible-playbook -i inventory.yml setup-infra.yml
-ansible-playbook -i inventory.yml setup-bootinfra.yml
+git clone https://github.com/kwozyman/edges.git
+git clone --branch fdo-collection https://github.com/empovit/fido-device-onboard-demo.git
+ansible-playbook -i inventory.yml fido-device-onboard-demo/fdo-servers.yml -e @vars.yml
+ansible-playbook -i inventory.yml setup-builder.yml -e @vars.yml
+ansible-playbook -i inventory.yml setup-bootinfra.yml -e @vars.yml
 ```
 
-Inventory setup
+Roles
 ---
 
-In order to deploy Edge Seed, you need to edit your inventory and edit the Ansible variables. An example is provided in `inventory-example.yml`.
+In order to deploy Edge Seed, you'll need to edit the global variables. In the examples above, these are contained in the `vars.yml` file:
+
+```
+---
+bootinfra_ip: 192.168.122.1
+manufacturing_server_rendezvous_info_ip_address: "{{ bootinfra_ip }}"
+owner_onboarding_server_owner_addresses_ip_address: "{{ bootinfra_ip }}"
+master_ssh_key: "<< sshkey >>"
+```
+
+These values are propagated to all hosts.
+
+In order to deploy Edge Seed, you need to edit your inventory and potentially edit the Ansible variables. An example is provided in `inventory-example.yml`.
+
+### libvirt
 
 To setup the virtual machines a host named `hypervisor` is required, with the following configuration:
 
@@ -37,6 +54,29 @@ To setup the virtual machines a host named `hypervisor` is required, with the fo
       * `ip` - network ip
     * `passwd` - root password
     * `sshkey` - root ssh key
+
+### community.fdo
+
+See [the playbooks](https://github.com/empovit/fido-device-onboard-demo/tree/fdo-collection)
+
+### builder
+
+To setup the builder machine, a host names `image-builder` is required, with the following possible configuration:
+
+  * `admin_password`: unencrypted password to add to generated images (optional)
+  * `sshkey`: public ssh key to be added to generated images
+  * `builder_blueprints`:
+    * `name`: blueprint/image name
+    * `description`: text with image description
+    * `sshkey`: custom ssh key per blueprint
+    * `fdo`: true if this is an FDO image
+    * `installation_device`: block device to deploy image to
+    * `manufacturing_server`: for FDO images, the manufacturing server ip
+    * `manufacturing_port`: for non-standard FDO manufacturing server port
+    * `image_type`: usually `edge-simplified-installer` for FDO
+    * `ref`: ostree reference. For RHEL `rhel/9/x86_64/edge`
+
+### bootinfra
 
 To setup boot infrastructure, a host named `bootinfra` is required, with the following configuration:
 
@@ -150,3 +190,5 @@ After the previous virtual machine completes setup and first boot, we can config
 ```
 
 After the configuration is complete, if we PXE boot two **UEFI** hosts with the correctly configured mac addresses on the same network, they should boot into RHEL setup.
+
+
