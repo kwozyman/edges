@@ -1,0 +1,7 @@
+---
+- name: setup bootinfra
+  gather_facts: true
+  hosts: image-builder
+  become: yes
+  roles:
+    - image-builder
