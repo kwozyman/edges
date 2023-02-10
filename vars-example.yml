@@ -1,0 +1,5 @@
+---
+bootinfra_ip: 192.168.122.1
+manufacturing_server_rendezvous_info_ip_address: "{{ bootinfra_ip }}"
+owner_onboarding_server_owner_addresses_ip_address: "{{ bootinfra_ip }}"
+master_ssh_key: "<< sshkey >>"
