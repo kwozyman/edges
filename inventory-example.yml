@@ -1,90 +1,73 @@
 ---
 all:
   hosts:
-    hypervisor:
-      ansible_host: hypervisor
-      bridges:
-        - name: eci
-          ip: 192.168.5.1/24
-          interface: enp7s0
-      libvirt_setup_enable: true
-      libvirt_pool_path: /var/eci/vm
-      libvirt_networks:
-        - name: eci-mgmt
-          cidr: 192.168.101.0/24
-          forward_mode: nat
-          ip: 192.168.101.1
-        - name: eci
-          cidr: 192.168.6.0/24
-      libvirt_isos:
-        - name: rhel91
-          #url: https://developers.redhat.com/content-gateway/file/rhel/9.1/rhel-baseos-9.1-x86_64-dvd.iso
-          url: https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.1-x86_64-dvd.iso
-      libvirt_vms:
-        - name: bootinfra
-          iso: rhel91
-          memory: 2048
-          cpu: 2
-          disk: 50
-          networks:
-            - name: eci-mgmt
-              ip: 192.168.101.2
-            - name: eci
-              ip: 192.168.6.1
-          passwd: $6$8Js/feNOYaM7iaMy$dFkIcAUfKyFWwgWzSKoTGf2h90fPEvr0Hyilx4udLzU4EGf6B/kFUK3OFkcPvnyk5l9wc2sc23/34vBx9sba./
-          sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMPkccS+SKCZEWGJzH7ew0eNPItvqeGFpOhZprmL9owO"
+    image-builder:
+      ansible_user: root
+      ansible_host: intel-host-control-1
+      manufacturing_server: "{{ booinfra_ip }}"
+      root_ssh_key_file: /root/.ssh/fortress.pub
+      admin_password: admin
+      sshkey: "{{ master_ssh_key }}"
+      builder_blueprints:
+        - name: r4e-eci
+          description: RHEL For Edge ECI image
+          sshkey: "{{ master_ssh_key }}"
+          fdo: true
+          installation_device: /dev/vda
+          manufacturing_server: "{{ manufacturing_server_rendezvous_info_ip_address }}"
+          manufacturing_port: 5000
+          image_type: edge-simplified-installer
+          ref: centos/8/x86_64/edge
     bootinfra:
-      ansible_host: bootinfra
+      ansible_host: intel-host-control-1
       ansible_user: root
       eci_configdir: /etc/eci
-      bootinfra_ip: 192.168.6.1
       tftpboot_enabled: true
-      tftpboot_download_enable: true
+      tftpboot_download_enable: false
       tftpboot_iso: 
-        - name: rhel-install
-          #url: http://192.168.150.237:8000/rhel-baseos-9.1-x86_64-boot.iso
-          url: https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.1-x86_64-dvd.iso
+        - name: simplified-installer
           files:
             - images/pxeboot/vmlinuz
             - images/pxeboot/initrd.img
-            - images/install.img
-            - EFI/BOOT/BOOTX64.EFI
+            - image.raw.xz
             - EFI/BOOT/grubx64.efi
+            - EFI/BOOT/BOOTX64.EFI
           shim: BOOTX64.EFI
           kernel: vmlinuz
-          kargs: "inst.stage2=http://{{ bootinfra_ip }}/rhel-install rd.live.check"
+          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.install_dev=/dev/vda coreos.inst.image_url=http://{{ bootinfra_ip }}/simplified-installer/image.raw.xz coreos.inst.insecure fdo.manufacturing_server_url=http://{{ manufacturing_server_rendezvous_info_ip_address }}:8080 fdo.diun_pub_key_insecure=true
+          rootfs: disk.img.xz
           initrd:
             - initrd.img
-          rootfs: install.img
-          rootfs_dir: images/
-#        - name: simplified-installer
-#          url: http://192.168.150.237:8000/d994f891-a5ab-4742-ab1e-c213f2948501-simplified-installer.iso
-#          files:
-#            - images/pxeboot/vmlinuz
-#            - images/pxeboot/initrd.img
-#            - disk.img.xz
-#            - EFI/BOOT/grubx64.efi
-#            - EFI/BOOT/BOOTX64.EFI
-#          shim: BOOTX64.EFI
-#          kernel: vmlinuz
-#          kargs: rd.neednet=1 coreos.inst.crypt_root=1 coreos.inst.install_dev=/dev/vda coreos.inst.image_url=http://{{ bootinfra_ip }}/simplified-installer/disk.img.xz coreos.inst.insecure fdo.manufacturing_server_url=http://192.168.100.177:8080 fdo.diun_pub_key_insecure=true
-#          rootfs: disk.img.xz
-#          initrd:
-#            - initrd.img
       dhcp_enabled: true
       dhcp_hosts:
-        - name: dhcp-test
-          mac: 52:54:00:29:24:96
-          ip: 192.168.6.50
-          boot: rhel-install
-        - name: testinfra
-          mac: 52:54:00:70:30:b0
-          ip: 192.168.6.51
-          boot: rhel-install
+        - name: testclient
+          mac: 52:54:00:b0:f2:0a
+          ip: 192.168.122.2
+          boot: simplified-installer
       dhcp_range: "{{ bootinfra_ip }},static"
       dns_enabled: true
       dns_static:
-        - name: eci.rh-intel.com
-          ip: 192.168.1.18
-        - name: apps.eci.rh-intel.com
-          ip: 192.168.1.18
+        - name: vecow.rh-intel.com
+          ip: 10.8.0.120
+        - name: testclient.eci.rh-intel.com
+          ip: 192.168.122.2
+rendezvous_server:
+  hosts:
+    rendezvous:
+      ansible_user: root
+      become_user: root
+      ansible_host: intel-host-control-1
+owner_server:
+  hosts:
+    owner:
+      ansible_user: root
+      become_user: root
+      ansible_host: intel-host-control-1
+      serviceinfo_api_server_service_info_initial_user_sshkeys: "{{ master_ssh_key }}"
+manufacturing_server:
+  hosts:
+    manufacturing:
+      ansible_user: root
+      ansible_host: intel-host-control-1
+      become_user: root
+
