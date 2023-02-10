@@ -6,9 +6,6 @@ groups = []
 distro = ""
 
 [customizations]
-installation_device = "/dev/vda"
-
-[customizations]
 {% if blueprint.installation_device is defined%}
 installation_device = "/dev/vda"
 {% endif %}
