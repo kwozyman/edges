@@ -26,10 +26,10 @@
     container_image_id: "{{ _container_image_output.stdout.split('\n')[-1].split(':')[-1] }}"
 
 - name: Run Web server in container for {{ image.name }}
-  ansible.builtin.shell: podman run --replace --rm -d --name {{ image.name }} -p 8080:8080 {{ container_image_id }}
+  ansible.builtin.shell: podman run --replace --rm -d --name {{ image.name }} -p 8880:8080 {{ container_image_id }}
 
 - name: "compose installer for {{ image.name }}"
-  ansible.builtin.command: "composer-cli compose start-ostree iso edge-simplified-installer --ref {{ image.ref }} --url http://localhost:8080/repo/ -j"
+  ansible.builtin.command: "composer-cli compose start-ostree iso edge-simplified-installer --ref {{ image.ref }} --url http://localhost:8880/repo/ -j"
   register: _image_compose
 
 - ansible.builtin.set_fact:
