@@ -1,0 +1,9 @@
+---
+- name: remove kernel args
+  command:
+    cmd: grubby --grub2 --update-kernel=ALL --args="{{ item }}"
+  loop: "{{ kargs_remove }}"
+- name: set kernel args
+  command:
+    cmd: grubby --grub2 --update-kernel=ALL --args="{{ item }}"
+  loop: "{{ kargs_set }}"
