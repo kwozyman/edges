@@ -1,0 +1,15 @@
+---
+- name: enable RT repo
+  command:
+    cmd: subscription-manager repos --enable rhel-9-for-x86_64-rt-rpms
+
+- name: Install the 'RT' package group
+  ansible.builtin.dnf:
+    name: '@RT'
+    state: present
+  register: kernel_install
+
+- name: reboot into RT kernel
+  ansible.builtin.reboot:
+    reboot_timeout: 3600
+  when: kernel_install.changed
