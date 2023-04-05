@@ -8,8 +8,12 @@
     </nat>
   {% endif %}  
   </forward>
-{% endif %}
+  {% if item.forward_mode == "bridge" %}
+  <bridge name="{{ item.bridge_name }}"/>
+  {% else %}
   <bridge name="virbr-{{ item.name }}" stp="on" delay="0"/>
+  {% endif %}
+{% endif %}
 {% if item.ip is defined %}
   <ip address="{{ item.ip }}" netmask="255.255.255.0" />
 {% endif %}

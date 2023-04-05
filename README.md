@@ -38,8 +38,9 @@ To setup the virtual machines a host named `hypervisor` is required, with the fo
   * `libvirt_networks` - a list of virtual networks to be created:
     * `name` - network name
     * `cidr` - subnet
-    * `forward_mode` - set to `true` to enable libvirt NATing for this connection
-    * `ip` - set in order to also setup ip on hypervisor (required for `forward_mode`)
+    * `forward_mode` - set to the type of libvirt forward mode wanted. Usually this means `nat` for network address translation (preferrable in all in one or other types of demos) or `bridge` for bridging to an existing physical device on the hypervisor
+    * `bridge_name` - only used to name the interface to bridge to in case of `forward_mode=bridge`
+    * `ip` - set in order to also setup ip on hypervisor (required for `forward_mode=nat`)
   * `libvirt_isos` - a list of iso images to be made available to the hypervisor
     * `name` - iso name
     * `url` - url for download
