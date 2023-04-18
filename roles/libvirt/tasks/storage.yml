@@ -18,3 +18,4 @@
     url: "{{ item.url }}"
     dest: "{{ libvirt_pool_path }}/{{ item.name }}.iso"
   loop: "{{ libvirt_isos }}"
+  when: "{{ libvirt_download_isos }}"
