@@ -1,5 +1,5 @@
-name = "iso"
-description = "ECI deployment iso"
+name = "{{ blueprint.name }}-iso"
+description = "{{ blueprint.description | default('RHEL Edges ECI image') }} ISO"
 version = "0.0.1"
 modules = []
 groups = []
@@ -7,7 +7,7 @@ distro = ""
 
 [customizations]
 {% if blueprint.installation_device is defined%}
-installation_device = "/dev/vda"
+installation_device = "{{ blueprint.installation_device }}"
 {% endif %}
 
 {% if blueprint.fdo %}
