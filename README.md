@@ -76,6 +76,7 @@ To setup the builder machine, a host names `image-builder` is required, with the
     * `manufacturing_port`: for non-standard FDO manufacturing server port
     * `image_type`: usually `edge-simplified-installer` for FDO
     * `ref`: ostree reference. For RHEL `rhel/9/x86_64/edge`
+    * `packages`: list with additional packages to add to image
 
 ### bootinfra
 
